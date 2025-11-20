@@ -1,8 +1,5 @@
 #pragma once
-/**
- * Piece base class and derived piece types.
- * Each derived piece implements generateMoves() to produce pseudo-legal moves.
- */
+
 #include <vector>
 #include <memory>
 #include <string>
@@ -10,8 +7,7 @@
 
 namespace chess {
 
-class Board; // forward declaration
-
+class Board;
 class Piece {
 public:
     Piece(Color color, PieceType type) : color_(color), type_(type) {}
@@ -20,10 +16,8 @@ public:
     Color color() const { return color_; }
     PieceType type() const { return type_; }
 
-    // Returns pseudo-legal moves for this piece from a square on a board
     virtual void generateMoves(const Board& board, Square from, std::vector<Move>& out) const = 0;
 
-    // single character symbol for printing
     virtual char symbol() const = 0;
 
 protected:
@@ -31,7 +25,6 @@ protected:
     PieceType type_;
 };
 
-// Concrete pieces
 class King : public Piece {
 public:
     King(Color c) : Piece(c, PieceType::King) {}
@@ -74,4 +67,4 @@ public:
     char symbol() const override { return color_ == Color::White ? 'P' : 'p'; }
 };
 
-} // namespace chess
+}

@@ -21,4 +21,4 @@ std::string Move::toString() const {
     return oss.str();
 }
 
-} // namespace chess
+} 

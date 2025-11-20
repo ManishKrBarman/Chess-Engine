@@ -1,7 +1,5 @@
 #pragma once
-/**
- * Game controller handling user input, game loop, PGN log, saving/loading.
- */
+
 #include <vector>
 #include <string>
 #include <fstream>
@@ -16,9 +14,9 @@ public:
 
     void newGame();
     void printBoard() const;
-    void loop(); // main CLI loop
+    void loop(); 
 
-    void save(const std::string& filename) const; // save FEN
+    void save(const std::string& filename) const; 
     void load(const std::string& filename);
 
     void exportPGN(const std::string& filename) const;
@@ -36,7 +34,7 @@ private:
     Color humanSide_ { Color::White };
 
     bool makeMoveString(const std::string& moveStr, bool record = true);
-    std::string moveToAlgebraic(const Move& m) const; // simplistic
+    std::string moveToAlgebraic(const Move& m) const;     
     std::string describeMove(Color mover, PieceType movingType, const Move& m) const;
     std::string pieceName(PieceType type) const;
     void logAction(const std::string& entry);
@@ -48,4 +46,4 @@ private:
     static std::string trim(const std::string& s);
 };
 
-} // namespace chess
+}

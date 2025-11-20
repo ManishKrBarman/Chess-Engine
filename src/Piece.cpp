@@ -8,7 +8,6 @@ static inline int rankOf(Square s){ return s / 8; }
 static inline bool onBoard(int f, int r){ return f>=0 && f<8 && r>=0 && r<8; }
 static inline Square toSq(int f,int r){ return r*8+f; }
 
-// Helper to add move if target square not occupied by friendly piece
 static void addIfValid(const Board& board, const Piece* pc, Square from, int tf, int tr, std::vector<Move>& out){
     if(!onBoard(tf,tr)) return; Square to = toSq(tf,tr); const Piece* tgt = board.pieceAt(to); if(tgt){ if(tgt->color()==pc->color()) return; Move m{from,to, (uint16_t)(tgt? CAPTURE: NORMAL)}; m.captured = tgt? tgt->type(): PieceType::None; out.push_back(m);} else { out.push_back(Move{from,to}); } }
 
@@ -56,7 +55,6 @@ void Pawn::generateMoves(const Board& board, Square from, std::vector<Move>& out
     // captures
     for(int df=-1; df<=1; df+=2){ int cf=f+df; int cr=r+dir; if(onBoard(cf,cr)){ Square to=toSq(cf,cr); const Piece* tgt=board.pieceAt(to); if(tgt && tgt->color()!=color_){ bool promotion=(cr==0||cr==7); Move m{from,to,(uint16_t)(CAPTURE | (promotion? PROMOTION:0)), promotion?PieceType::Queen:PieceType::None}; m.captured=tgt->type(); out.push_back(m);} }
     }
-    // en-passant capture handled in Board::generatePseudoLegalMoves (flag insertion)
 }
 
-} // namespace chess
+} 

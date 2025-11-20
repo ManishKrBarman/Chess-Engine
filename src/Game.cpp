@@ -44,7 +44,7 @@ bool Game::makeMoveString(const std::string& moveStr, bool record){
 }
 
 std::string Game::moveToAlgebraic(const Move& m) const {
-    // Extremely simplified notation: e2e4, with x and promotion suffix
+    // Notation: e2e4, with x and promotion suffix
     std::string s = Board::squareToString(m.from) + (m.isCapture()?"x":"") + Board::squareToString(m.to);
     if(m.isPromotion()){
         char c='Q'; switch(m.promotion){ case PieceType::Rook: c='R'; break; case PieceType::Bishop: c='B'; break; case PieceType::Knight: c='N'; break; default: c='Q'; }
@@ -227,4 +227,4 @@ std::string Game::trim(const std::string& s){
     return s.substr(first, last-first+1);
 }
 
-} // namespace chess
+} 

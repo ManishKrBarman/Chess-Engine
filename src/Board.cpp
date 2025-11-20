@@ -15,7 +15,7 @@ static inline bool onBoard(int f,int r){ return f>=0 && f<8 && r>=0 && r<8; }
 Board::Board(){ reset(); }
 
 void Board::placeInitialPieces(){
-    // Clear
+    
     for(auto &p: squares_) p.reset();
     // Pawns
     for(int f=0; f<8; ++f){ squares_[toSq(f,1)] = std::make_unique<Pawn>(Color::White); squares_[toSq(f,6)] = std::make_unique<Pawn>(Color::Black); }
@@ -67,8 +67,7 @@ std::string Board::squareToString(Square sq){ std::string s; s.push_back('a'+fil
 Square Board::parseSquare(const std::string& s){ if(s.size()!=2) return -1; int f=s[0]-'a'; int r=s[1]-'1'; if(f<0||f>7||r<0||r>7) return -1; return toSq(f,r);} 
 
 bool Board::isSquareAttacked(Square sq, Color by) const {
-    // Naive: generate pseudo moves of side 'by' and see if target included.
-    for(int i=0;i<64;++i){ const Piece* p=pieceAt(i); if(!p||p->color()!=by) continue; std::vector<Move> tmp; p->generateMoves(*this,i,tmp); for(auto &m: tmp){ if(m.to==sq){ // Need special handling for pawns (no forward non-captures)
+    for(int i=0;i<64;++i){ const Piece* p=pieceAt(i); if(!p||p->color()!=by) continue; std::vector<Move> tmp; p->generateMoves(*this,i,tmp); for(auto &m: tmp){ if(m.to==sq){ 
             return true; } }
     }
     return false;
@@ -77,13 +76,13 @@ bool Board::isSquareAttacked(Square sq, Color by) const {
 bool Board::inCheck(Color c) const {
     // find king square
     for(int i=0;i<64;++i){ const Piece* p=pieceAt(i); if(p && p->type()==PieceType::King && p->color()==c){ return isSquareAttacked(i, c==Color::White? Color::Black: Color::White); }}
-    return false; // Should not happen
+    return false;
 }
 
 void Board::generatePseudoLegalMoves(std::vector<Move>& out) const {
     out.clear();
     for(int i=0;i<64;++i){ const Piece* p=pieceAt(i); if(!p||p->color()!=sideToMove_) continue; p->generateMoves(*this,i,out); }
-    // Add pawn en-passant captures
+    // pawn en-passant captures
     if(enPassantSquare_!=-1){ int epFile=fileOf(enPassantSquare_), epRank=rankOf(enPassantSquare_); int targetRank = (sideToMove_==Color::White? 4:3); if(epRank==targetRank){ int pawnRank = (sideToMove_==Color::White? 4:3); for(int df=-1; df<=1; df+=2){ int f=epFile+df; if(onBoard(f,pawnRank)){ Square from=toSq(f,pawnRank); const Piece* p=pieceAt(from); if(p && p->type()==PieceType::Pawn && p->color()==sideToMove_){ Move m{from,enPassantSquare_, (uint16_t)(CAPTURE|EN_PASSANT)}; m.captured = PieceType::Pawn; out.push_back(m); } } } }
     }
 }
@@ -92,7 +91,7 @@ void Board::generateLegalMoves(std::vector<Move>& out) {
     std::vector<Move> pseudo; generatePseudoLegalMoves(pseudo); out.clear();
     Color us = sideToMove_;
     for(const auto& base : pseudo){
-        Move tmp = base; // apply on a temporary move to capture prev-state
+        Move tmp = base; 
         applyMove(tmp);
         if(!inCheck(us)){
             out.push_back(base);
@@ -102,7 +101,7 @@ void Board::generateLegalMoves(std::vector<Move>& out) {
 }
 
 void Board::applyMove(Move& m){
-    // Store previous state
+    
     m.prevWhiteKingside = whiteKingside_; m.prevWhiteQueenside = whiteQueenside_; m.prevBlackKingside = blackKingside_; m.prevBlackQueenside = blackQueenside_; m.prevEnPassant = enPassantSquare_; m.prevHalfmoveClock = halfmoveClock_;
 
     Piece* moving = pieceAt(m.from); if(!moving) throw std::runtime_error("No piece on from-square");
@@ -132,7 +131,7 @@ void Board::applyMove(Move& m){
         Color col = sideToMove_; squares_[m.to].reset(); squares_[m.to] = std::make_unique<Queen>(col); // auto queen
     }
 
-    // Update castling rights simplistic
+    
     if(moving->type()==PieceType::King){ if(sideToMove_==Color::White){ whiteKingside_=whiteQueenside_=false; } else { blackKingside_=blackQueenside_=false; }}
     if(moving->type()==PieceType::Rook){ int f=fileOf(m.from), r=rankOf(m.from); if(r==0 && f==0) whiteQueenside_=false; if(r==0 && f==7) whiteKingside_=false; if(r==7 && f==0) blackQueenside_=false; if(r==7 && f==7) blackKingside_=false; }
     if(m.isCapture() && m.captured==PieceType::Rook){ int f=fileOf(m.to), r=rankOf(m.to); if(r==0 && f==0) whiteQueenside_=false; if(r==0 && f==7) whiteKingside_=false; if(r==7 && f==0) blackQueenside_=false; if(r==7 && f==7) blackKingside_=false; }
@@ -157,7 +156,7 @@ void Board::undoMove(const Move& m){
         if(m.isEnPassant()){
             int dir = (sideToMove_==Color::White? 1: -1); Square capSq = toSq(fileOf(m.to), rankOf(m.to)+dir); squares_[capSq] = std::make_unique<Pawn>(sideToMove_==Color::White? Color::Black: Color::White); // assume pawn
         } else {
-            // recreate captured piece type (simplified: create generic piece of captured type)
+            // recreate captured piece type 
             Color captColor = (sideToMove_==Color::White? Color::Black: Color::White);
             switch(m.captured){
                 case PieceType::Pawn: squares_[m.to] = std::make_unique<Pawn>(captColor); break;
@@ -172,9 +171,9 @@ void Board::undoMove(const Move& m){
     } else {
         squares_[m.to].reset();
     }
-    // TODO: reverse promotion properly (simplified: if promotion flag, assume pawn moved)
+    
     if(m.isPromotion()){
-        squares_[m.from].reset(); squares_[m.from] = std::make_unique<Pawn>(sideToMove_); // restore pawn
+        squares_[m.from].reset(); squares_[m.from] = std::make_unique<Pawn>(sideToMove_); 
     }
     whiteKingside_ = m.prevWhiteKingside; whiteQueenside_ = m.prevWhiteQueenside; blackKingside_ = m.prevBlackKingside; blackQueenside_ = m.prevBlackQueenside; enPassantSquare_ = m.prevEnPassant; halfmoveClock_ = m.prevHalfmoveClock;
 }
@@ -183,4 +182,4 @@ uint64_t Board::perft(int depth){
     if(depth==0) return 1; std::vector<Move> moves; generateLegalMoves(moves); uint64_t nodes=0; for(auto &mv: moves){ Move backup=mv; applyMove(mv); nodes += perft(depth-1); undoMove(backup); } return nodes;
 }
 
-} // namespace chess
+} 
